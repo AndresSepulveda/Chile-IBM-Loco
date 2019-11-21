@@ -1,10 +1,15 @@
 from datetime import datetime, timedelta
 import numpy as np
 from opendrift.readers import reader_basemap_landmask
-from IBM.LarvalFish import LarvalFish
-
+from IBM.larval_fish import PelagicPlanktonDrift
 from opendrift.readers import reader_netCDF_CF_generic
 
+# seed the pseudorandom number generator
+import random
+
+# seed the pseudorandom number generator
+from random import seed
+from random import random
 import logging
 import os
 from netCDF4 import Dataset, date2num,num2date
@@ -26,8 +31,7 @@ def setup_configuration(o):
     #######################
     # PHYSICS configuration
     #######################
-    
-    o.set_config('processes:turbulentmixing',  False)
+    o.set_config('processes:turbulentmixing', False)
     o.set_config('processes:verticaladvection', False)
     o.set_config('turbulentmixing:diffusivitymodel','windspeed_Sundby1983')
 
@@ -43,7 +47,6 @@ def setup_configuration(o):
     #######################
     o.set_config('biology:constant_ingestion', 0.75)
     o.set_config('biology:active_metab_on', 1)
-    o.set_config('biology:species', 'loco')
     o.set_config('biology:attenuation_coefficient',0.18)
     if confobj.verticalBehavior:
         o.set_config('biology:fraction_of_timestep_swimming',0.15) # Pause-swim behavior
@@ -56,10 +59,10 @@ def createAndRunSimulation(confobj):
     """
     Setup a new simulation
     """
-    print("TRS 1");
-    o = LarvalFish(loglevel=0)
+
+    o = PelagicPlanktonDrift(loglevel=0)
     o.complexIBM=confobj.complexIBM
-    print("TRS 2");
+
     setup_configuration(o)
 
     reader_basemap = reader_basemap_landmask.Reader(
@@ -69,16 +72,15 @@ def createAndRunSimulation(confobj):
         urcrnrlat=confobj.ymax,
         resolution='i', 
         projection='merc')
-                       
-    o.add_reader([reader_basemap]) 
-    
+
     """ 
     Read in the physical ocean forcing 
     """
     print("Trying to read file {}".format(confobj.basedir+confobj.pattern))
     reader_physics = reader_netCDF_CF_generic.Reader(confobj.basedir+confobj.pattern)
-    o.add_reader([reader_physics ]) 
-   
+    o.add_reader([reader_basemap,reader_physics ]) 
+    # TODO: need to add wind forcing e.g. ERA5
+    
     # For each station longitude-latitude we release particles for
     # 30 days at each depth level defined in depthlevels and we track each particle for
     # 1 day (drift:max_age_seconds', 86400)
@@ -86,25 +88,30 @@ def createAndRunSimulation(confobj):
         
         print('Seeding {} elements within a radius of {} m'.format(confobj.releaseParticles, 
         confobj.releaseRadius))
-
         print("Releasing {} particles between {} and {}".format(confobj.species,confobj.startdate,confobj.enddate))
         o.seed_elements(lon=confobj.st_lons, 
                             lat=confobj.st_lats, 
                             number=confobj.releaseParticles, 
                             time=confobj.startdate,
-                            terminal_velocity=confobj.select_sinking_velocity,
-                            z="seafloor+0.5")
+                            # TODO:  z="seafloor+0.5") need to add reader for variable 
+                            # `sea_floor_depth_below_sea_level
+                            z=-30+(1.0*random.randint(0,10))) 
     confobj.startdate += timedelta(days=1)
     print('Elements scheduled for {} : {}'.format(confobj.species,o.elements_scheduled))
     enddate=confobj.enddate+timedelta(days=confobj.totaldays)
-
+   
     o.run(end_time=enddate, 
         time_step=timedelta(minutes=30), 
         time_step_output=timedelta(minutes=30),
         outfile=confobj.outputFilename,
-        export_variables=['sea_floor_depth_below_sea_level','temp','z','x_sea_water_velocity', 'y_sea_water_velocity'])
+        # TODO: add 'sea_floor_depth_below_sea_level' when you have reader for it
+        export_variables=['temp','z','x_sea_water_velocity', 'y_sea_water_velocity'])
 
-
+   # o.plot(background=['x_sea_water_velocity', 'y_sea_water_velocity'],filename="test.png")
+   # o.animation(background=['x_sea_water_velocity', 'y_sea_water_velocity'], filename="animation.mp4")
+  
+    o.plot_vertical_distribution(show_wind=False)
+            
 if __name__ == "__main__":
     start_time = time.time()
 

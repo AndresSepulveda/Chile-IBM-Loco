@@ -35,10 +35,10 @@ class loco_conf():
         self.experiment=1
         self.plot_type='heatmap'
         self.requiredResolution=30 # km between bins
-        self.xmin=-22.0
-        self.xmax=23.5
-        self.ymin=65.0
-        self.ymax=78.0
+        self.xmin=260.0
+        self.xmax=300.0
+        self.ymin=-40.0
+        self.ymax=-20.0
         self.cmapname='RdYlBu_r'
         self.selectyear='all'
         
@@ -64,7 +64,8 @@ class loco_conf():
         # LOCO - seed locations
         self.st_lons, self.st_lats = self.load_release_points()
         self.total_competency_duration=30
-
+        self.totaldays=10
+        
     def __init__(self):
         print('\nStarted ' + time.ctime(time.time()))
 
@@ -85,5 +86,5 @@ class loco_conf():
         self.st_lons=[]
         self.st_lats=[] 
         self.user_defined_inits()
-    
+        
 

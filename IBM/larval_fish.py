@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 from opendrift.models.opendrift3D import \
     OpenDrift3DSimulation, Lagrangian3DArray
 from opendrift.elements import LagrangianArray
-import IBM.light as light
+#import IBM.light as light
+import IBM.calclight as calclight
 
 # Defining the oil element properties
 class LarvalFish(Lagrangian3DArray):
@@ -33,7 +34,7 @@ class LarvalFish(Lagrangian3DArray):
                          'default': 0.}),               
         ('length', {'dtype': np.float32,
                          'units': 'mm',
-                         'default': 4.0}),
+                         'default': 10.0}),
         ('weight', {'dtype': np.float32,
                          'units': 'mg',
                          'default': 0.08}),
@@ -58,7 +59,6 @@ class LarvalFish(Lagrangian3DArray):
          ('survival', {'dtype': np.float32, 
                           'units': '',
                           'default': 1.})])
-
     
 class PelagicPlanktonDrift(OpenDrift3DSimulation):
     """Buoyant particle trajectory model based on the OpenDrift framework.
@@ -121,23 +121,47 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
                      'hatched': 'red', 'eaten': 'yellow', 'died': 'magenta'}
 
     def __init__(self, *args, **kwargs):
-        print("Inside larvalfish 0")
         # Calling general constructor of parent class
         super(PelagicPlanktonDrift, self).__init__(*args, **kwargs)
         
-        print("Inside larvalfish 2")
         #IBM configugration options
         self._add_config('biology:constant_ingestion', 'float(min=0.0, max=1.0, default=0.5)', comment='Ingestion constant')
         self._add_config('biology:active_metab_on', 'float(min=0.0, max=1.0, default=1.0)', comment='Active metabolism')
         self._add_config('biology:attenuation_coefficient', 'float(min=0.0, max=1.0, default=0.18)', comment='Attenuation coefficient')
         self._add_config('biology:fraction_of_timestep_swimming', 'float(min=0.0, max=1.0, default=0.15)', comment='Fraction of timestep swimming')
         self._add_config('biology:lower_stomach_lim', 'float(min=0.0, max=1.0, default=0.3)', comment='Limit of stomach fullness for larvae to go down if light increases')
-        self._add_config('biology:species', 'default=loco', comment='Species=loco')
+        self._add_config('biology:total_competency_duration', 'float(min=0.0, max=60.0, default=2)', comment='total_competency_duration')
       
         self.complexIBM=False
-
+      
     def calculate_maximum_daily_light(self):
+        """LIGHT == Get the maximum light at the current latitude, and the current surface light at the current time.
+        These values are used in calculateGrowth and  predation.FishPredAndStarvation, but need only be calcuated once per time step. """
+
+        tt = self.time.timetuple()
+      
+        num=np.shape(self.elements.lat)[0]
+        day_of_year = float(tt.tm_yday); month=float(tt.tm_mon); hour_of_day = float(tt.tm_hour); days_in_year=365.0
+        radfl0=np.zeros((num)); max_light=np.zeros((num)); 
+        cawdir=np.zeros((num)); clouds=0.0; 
+        sun_height=np.zeros((num)); surface_light=np.zeros((num))
+
+        """Calculate the maximum and average light values for a given geographic position
+        for a given time of year. Notice we use radfl0 instead of maximum values maxLight
+        in light caclualtions. Seemed better to use average values than extreme values.
+        NOTE: Convert from W/m2 to umol/m2/s-1"""
+        radfl0,max_light,cawdir = calclight.calclight.qsw(radfl0,max_light,cawdir,clouds,self.elements.lat*np.pi/180.0,day_of_year,days_in_year,num)
+        max_light = radfl0/0.217
+        
+        """Calculate the daily variation of irradiance based on hour of day - store in self.elements.light"""
+        for ind in range(len(self.elements.lat)):
+          sun_height, surface_light = calclight.calclight.surlig(hour_of_day,float(max_light[ind]),day_of_year,float(self.elements.lat[ind]),sun_height,surface_light)
+          self.elements.light[ind]=surface_light
+        #  print("{} light {} time {}".format(ind,self.elements.light[ind],tt))
+        
+    def calculate_maximum_daily_light_python(self):
         """
+        NOT WORKING:
         LIGHT calculations
         Get the maximum surface light at the current latitude and the time of day. This assumes that masimum yearly 
         surface light is known (simplification to use Python light module)
@@ -161,6 +185,8 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         # Update days of competency stage completed
         self.elements.competency_duration+=dt/86400.
         
+        # TODO: Need a function that relates growth to length to update length for each time step
+        
     def update_vertial_position(self,length,old_light,current_light,current_depth,stomach_fullness,dt):
         """
         Update the vertical position of the current larva
@@ -168,7 +194,7 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         
         swim_speed=0.1*length # 0.1 Body length per second
         fraction_of_timestep_swimming = self.get_config('biology:fraction_of_timestep_swimming')
-        max_hourly_move = swim_speed*fraction_of_timestep_swimming*dt
+        max_hourly_move = swim_speed*dt # TODO : add ? *fraction_of_timestep_swimming
         max_hourly_move =  round(max_hourly_move/1000.,1) # depth values are negative
         
         if (old_light <= current_light): # and stomach_fullness >= lower_stomach_lim): #If light increases and stomach is sufficiently full, go down
@@ -186,14 +212,15 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         constant_ingestion = self.get_config('biology:constant_ingestion')
         active_metab_on = self.get_config('biology:active_metab_on')
         att_coeff = self.get_config('biology:attenuation_coefficient')
-
+        total_competency_duration = self.get_config('biology:total_competency_duration')
+        
         # LIGHT UPDATE
         # Save the light from previous timestep to use for vertical behavior
         last_light=np.zeros(np.shape(self.elements.light))
         last_light[:]=self.elements.light[:]
         self.calculate_maximum_daily_light()
         # Light at depth of larvae assuming constant attenuation (can be changed to dependent on chlorophyll)
-        self.elements.Eb=self.elements.light*np.exp(attCoeff*(self.elements.z))
+        self.elements.Eb=self.elements.light*np.exp(att_coeff*(self.elements.z))
 
         # FISH UPDATE
         self.update_larval_fish_development()
@@ -202,10 +229,10 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         dt=self.time_step.total_seconds()
 
         for ind in range(len(self.elements.lat)):
-          if (self.elements.competency_duration[ind]>=config_loco.total_competency_duration):
-          
+          if (self.elements.competency_duration[ind]>=total_competency_duration):
+        
             self.elements.z[ind] = self.update_vertial_position(self.elements.length[ind],
-              lastLight[ind],
+              last_light[ind],
               self.elements.light[ind],
               self.elements.z[ind],
               self.elements.stomach_fullness[ind],
