@@ -63,8 +63,11 @@ class loco_conf():
         self.species='loco'
         # LOCO - seed locations
         self.st_lons, self.st_lats = self.load_release_points()
-        self.total_competency_duration=30
-        self.totaldays=10
+        # Total time at teh bottom prior to starting vertical behavior
+        self.total_competency_duration=30.0*24.0*3600.0 # days in seconds
+        # Total time free drift before settlement to bottom for competency_duration
+        self.total_time_free_drift_before_competency=1.0*24*3600. # days in seconds
+        self.totaldays=10 # days
         
     def __init__(self):
         print('\nStarted ' + time.ctime(time.time()))

@@ -130,8 +130,7 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         self._add_config('biology:attenuation_coefficient', 'float(min=0.0, max=1.0, default=0.18)', comment='Attenuation coefficient')
         self._add_config('biology:fraction_of_timestep_swimming', 'float(min=0.0, max=1.0, default=0.15)', comment='Fraction of timestep swimming')
         self._add_config('biology:lower_stomach_lim', 'float(min=0.0, max=1.0, default=0.3)', comment='Limit of stomach fullness for larvae to go down if light increases')
-        self._add_config('biology:total_competency_duration', 'float(min=0.0, max=60.0, default=2)', comment='total_competency_duration')
-      
+       
         self.complexIBM=False
       
     def calculate_maximum_daily_light(self):
@@ -203,6 +202,19 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
           depth = min(0,current_depth + max_hourly_move)
         return depth
 
+    def update_vertial_position_fixed_range(self,length,old_light,current_light,current_depth,stomach_fullness,dt):
+        """
+        Update the vertical position of the current larva
+        """
+        swim_speed=30.0/86400.0*0.5
+        max_hourly_move = swim_speed*dt
+        
+        if (old_light <= current_light): # and stomach_fullness >= lower_stomach_lim): #If light increases and stomach is sufficiently full, go down
+          depth = min(0.0,current_depth - max_hourly_move)
+        else: #If light decreases or stomach is not sufficiently full, go up
+          depth = min(0,current_depth + max_hourly_move)
+        return depth
+        
     def update_larval_fish(self):
         """
         This is where we can include higher level complexity in the calculations of 
@@ -213,7 +225,8 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         active_metab_on = self.get_config('biology:active_metab_on')
         att_coeff = self.get_config('biology:attenuation_coefficient')
         total_competency_duration = self.get_config('biology:total_competency_duration')
-        
+        dt_drift=self.get_config('IBM:total_time_free_drift_before_competency') 
+       
         # LIGHT UPDATE
         # Save the light from previous timestep to use for vertical behavior
         last_light=np.zeros(np.shape(self.elements.light))
@@ -229,14 +242,22 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         dt=self.time_step.total_seconds()
 
         for ind in range(len(self.elements.lat)):
-          if (self.elements.competency_duration[ind]>=total_competency_duration):
-        
-            self.elements.z[ind] = self.update_vertial_position(self.elements.length[ind],
-              last_light[ind],
-              self.elements.light[ind],
-              self.elements.z[ind],
-              self.elements.stomach_fullness[ind],
-              dt)
+          if (self.elements.competency_duration[ind]>=total_competency_duration+dt_drift):
+              
+            if self.get_config('IBM:vertical_behavior_fixed_range') is True:
+                self.elements.z[ind] = self.update_vertial_position_fixed_range(self.elements.length[ind],
+                    last_light[ind],
+                    self.elements.light[ind],
+                    self.elements.z[ind],
+                    self.elements.stomach_fullness[ind],
+                    dt)
+            if self.get_config('IBM:vertical_behavior_dynamic_range') is True:
+                self.elements.z[ind] = self.update_vertial_position(self.elements.length[ind],
+                last_light[ind],
+                self.elements.light[ind],
+                self.elements.z[ind],
+                self.elements.stomach_fullness[ind],
+                dt)
 
 
     def update(self):
@@ -264,7 +285,16 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         self.update_larval_fish()
         
         # Horizontal advection
-        self.advect_ocean_current()
+        dt_drift=self.get_config('IBM:total_time_free_drift_before_competency') 
+        dt_competence=self.get_config('IBM:total_time_free_drift_before_competency') 
+        passive_drift_during_competence_period=self.get_config('IBM:passive_drift_during_competence_period') 
+        
+        if not passive_drift_during_competence_period:
+          if (self.elements.age_seconds[ind] < dt_drift or self.elements.age_seconds[ind] > dt_drift+dt_competence):
+              # TODO: Should make the larvae move to the bottom depth during dt_competence duration - how to find bottom depth?  
+              self.advect_ocean_current()
+        else:
+              self.advect_ocean_current() 
        
         # Vertical advection
         if self.get_config('processes:verticaladvection') is True:

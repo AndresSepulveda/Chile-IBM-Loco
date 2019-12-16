@@ -27,7 +27,7 @@ __modified__ = datetime(2019, 11, 19)
 __version__ = "1.0"
 __status__ = "Development, modified on 19.11.2019"
 
-def setup_configuration(o):
+def setup_configuration(o,confobj):
     #######################
     # PHYSICS configuration
     #######################
@@ -40,7 +40,7 @@ def setup_configuration(o):
     o.set_config('drift:max_age_seconds', confobj.maximum_life_span_seconds)
 
     o.set_config('general:coastline_action', 'previous') #Prevent stranding, jump back to previous position
-    o.set_config('general:basemap_resolution', 'i')
+  #  o.set_config('general:basemap_resolution', 'i')
     
     #######################
     # IBM configuration   
@@ -48,10 +48,19 @@ def setup_configuration(o):
     o.set_config('biology:constant_ingestion', 0.75)
     o.set_config('biology:active_metab_on', 1)
     o.set_config('biology:attenuation_coefficient',0.18)
-    if confobj.verticalBehavior:
-        o.set_config('biology:fraction_of_timestep_swimming',0.15) # Pause-swim behavior
-    else:
-        o.set_config('biology:fraction_of_timestep_swimming',0.00) # Pause-swim behavior
+    
+    # Define vertical behavior
+    if confobj.experiment==1:
+        o.set_config('IBM:vertical_behavior_fixed_range', True)
+        o.set_config('IBM:vertical_behavior_dynamic_range', False)
+    if confobj.experiment==2:
+        o.set_config('IBM:vertical_behavior_fixed_range', False)
+        o.set_config('IBM:vertical_behavior_dynamic_range', True)
+        
+    o.set_config('IBM:total_time_free_drift_before_competency', confobj.total_time_free_drif_before_competency)
+    o.set_config('IBM:total_competency_duration', confobj.total_competency_duration)
+    o.set_config('IBM:passive_drift_during_competence_period', confobj.passive_drift_during_competence_period)
+    
     o.set_config('biology:lower_stomach_lim',0.3) #Min. stomach fullness needed to actively swim down
    
 def createAndRunSimulation(confobj):
@@ -62,23 +71,14 @@ def createAndRunSimulation(confobj):
 
     o = PelagicPlanktonDrift(loglevel=0)
     o.complexIBM=confobj.complexIBM
-
-    setup_configuration(o)
-
-    reader_basemap = reader_basemap_landmask.Reader(
-        llcrnrlon=confobj.xmin, 
-        llcrnrlat=confobj.ymin,
-        urcrnrlon=confobj.xmax, 
-        urcrnrlat=confobj.ymax,
-        resolution='i', 
-        projection='merc')
+    setup_configuration(o,confobj)
 
     """ 
     Read in the physical ocean forcing 
     """
     print("Trying to read file {}".format(confobj.basedir+confobj.pattern))
     reader_physics = reader_netCDF_CF_generic.Reader(confobj.basedir+confobj.pattern)
-    o.add_reader([reader_basemap,reader_physics ]) 
+    o.add_reader([reader_physics ]) 
     # TODO: need to add wind forcing e.g. ERA5
     
     # For each station longitude-latitude we release particles for
@@ -93,6 +93,7 @@ def createAndRunSimulation(confobj):
                             lat=confobj.st_lats, 
                             number=confobj.releaseParticles, 
                             time=confobj.startdate,
+                            # TODO: maimum life_span_seconds
                             # TODO:  z="seafloor+0.5") need to add reader for variable 
                             # `sea_floor_depth_below_sea_level
                             z=-30+(1.0*random.randint(0,10))) 
@@ -107,17 +108,17 @@ def createAndRunSimulation(confobj):
         # TODO: add 'sea_floor_depth_below_sea_level' when you have reader for it
         export_variables=['temp','z','x_sea_water_velocity', 'y_sea_water_velocity'])
 
-   # o.plot(background=['x_sea_water_velocity', 'y_sea_water_velocity'],filename="test.png")
+    o.plot(background=['x_sea_water_velocity', 'y_sea_water_velocity'],filename="test.png")
    # o.animation(background=['x_sea_water_velocity', 'y_sea_water_velocity'], filename="animation.mp4")
   
-    o.plot_vertical_distribution(show_wind=False)
+   # o.plot_vertical_distribution(show_wind=False)
             
 if __name__ == "__main__":
     start_time = time.time()
 
     confobj=confm.loco_conf()
     
-    experiments = [1]
+    experiments = [1,2]
     
     for experiment in experiments:
         confobj.experiment=experiment
