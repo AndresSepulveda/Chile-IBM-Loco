@@ -68,6 +68,7 @@ class loco_conf():
         # Total time free drift before settlement to bottom for competency_duration
         self.total_time_free_drift_before_competency=1.0*24*3600. # days in seconds
         self.totaldays=10 # days
+        self.passive_drift_during_competence_period=True
         
     def __init__(self):
         print('\nStarted ' + time.ctime(time.time()))

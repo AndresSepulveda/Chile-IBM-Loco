@@ -45,9 +45,9 @@ def setup_configuration(o,confobj):
     #######################
     # IBM configuration   
     #######################
-    o.set_config('biology:constant_ingestion', 0.75)
-    o.set_config('biology:active_metab_on', 1)
-    o.set_config('biology:attenuation_coefficient',0.18)
+    o.set_config('IBM:constant_ingestion', 0.75)
+    o.set_config('IBM:active_metab_on', 1)
+    o.set_config('IBM:attenuation_coefficient',0.18)
     
     # Define vertical behavior
     if confobj.experiment==1:
@@ -57,11 +57,10 @@ def setup_configuration(o,confobj):
         o.set_config('IBM:vertical_behavior_fixed_range', False)
         o.set_config('IBM:vertical_behavior_dynamic_range', True)
         
-    o.set_config('IBM:total_time_free_drift_before_competency', confobj.total_time_free_drif_before_competency)
+    o.set_config('IBM:total_time_free_drift_before_competency', confobj.total_time_free_drift_before_competency)
     o.set_config('IBM:total_competency_duration', confobj.total_competency_duration)
     o.set_config('IBM:passive_drift_during_competence_period', confobj.passive_drift_during_competence_period)
-    
-    o.set_config('biology:lower_stomach_lim',0.3) #Min. stomach fullness needed to actively swim down
+    o.set_config('IBM:lower_stomach_lim',0.3) #Min. stomach fullness needed to actively swim down
    
 def createAndRunSimulation(confobj):
 

@@ -125,12 +125,18 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         super(PelagicPlanktonDrift, self).__init__(*args, **kwargs)
         
         #IBM configugration options
-        self._add_config('biology:constant_ingestion', 'float(min=0.0, max=1.0, default=0.5)', comment='Ingestion constant')
-        self._add_config('biology:active_metab_on', 'float(min=0.0, max=1.0, default=1.0)', comment='Active metabolism')
-        self._add_config('biology:attenuation_coefficient', 'float(min=0.0, max=1.0, default=0.18)', comment='Attenuation coefficient')
-        self._add_config('biology:fraction_of_timestep_swimming', 'float(min=0.0, max=1.0, default=0.15)', comment='Fraction of timestep swimming')
-        self._add_config('biology:lower_stomach_lim', 'float(min=0.0, max=1.0, default=0.3)', comment='Limit of stomach fullness for larvae to go down if light increases')
-       
+        self._add_config('IBM:constant_ingestion', 'float(min=0.0, max=1.0, default=0.5)', comment='Ingestion constant')
+        self._add_config('IBM:active_metab_on', 'float(min=0.0, max=1.0, default=1.0)', comment='Active metabolism')
+        self._add_config('IBM:attenuation_coefficient', 'float(min=0.0, max=1.0, default=0.18)', comment='Attenuation coefficient')
+        self._add_config('IBM:fraction_of_timestep_swimming', 'float(min=0.0, max=1.0, default=0.15)', comment='Fraction of timestep swimming')
+        self._add_config('IBM:lower_stomach_lim', 'float(min=0.0, max=1.0, default=0.3)', comment='Limit of stomach fullness for larvae to go down if light increases')
+          
+        self._add_config('IBM:vertical_behavior_fixed_range', 'boolean(default=False)', comment='Fixed swim range for VB')
+        self._add_config('IBM:vertical_behavior_dynamic_range', 'boolean(default=True)', comment='Dynamic swim range for VB')
+        self._add_config('IBM:total_time_free_drift_before_competency', 'float(min=86400, max=172800, default=86400)', comment='Time after spawn to drift')
+        self._add_config('IBM:total_competency_duration', 'float(min=2592000, max=25920000, default=2592000)', comment='Time of competence')
+        self._add_config('IBM:passive_drift_during_competence_period', 'boolean(default=False)', comment='Drift during competence')
+    
         self.complexIBM=False
       
     def calculate_maximum_daily_light(self):
@@ -192,7 +198,7 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         """
         
         swim_speed=0.1*length # 0.1 Body length per second
-        fraction_of_timestep_swimming = self.get_config('biology:fraction_of_timestep_swimming')
+        fraction_of_timestep_swimming = self.get_config('IBM:fraction_of_timestep_swimming')
         max_hourly_move = swim_speed*dt # TODO : add ? *fraction_of_timestep_swimming
         max_hourly_move =  round(max_hourly_move/1000.,1) # depth values are negative
         
@@ -221,10 +227,10 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         growth, survial, development, and behavior of each individual 
         """
         # SETTINGS
-        constant_ingestion = self.get_config('biology:constant_ingestion')
-        active_metab_on = self.get_config('biology:active_metab_on')
-        att_coeff = self.get_config('biology:attenuation_coefficient')
-        total_competency_duration = self.get_config('biology:total_competency_duration')
+        constant_ingestion = self.get_config('IBM:constant_ingestion')
+        active_metab_on = self.get_config('IBM:active_metab_on')
+        att_coeff = self.get_config('IBM:attenuation_coefficient')
+        total_competency_duration = self.get_config('IBM:total_competency_duration')
         dt_drift=self.get_config('IBM:total_time_free_drift_before_competency') 
        
         # LIGHT UPDATE
