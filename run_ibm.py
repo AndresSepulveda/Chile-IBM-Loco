@@ -61,6 +61,7 @@ def setup_configuration(o,confobj):
     o.set_config('IBM:total_competency_duration', confobj.total_competency_duration)
     o.set_config('IBM:passive_drift_during_competence_period', confobj.passive_drift_during_competence_period)
     o.set_config('IBM:lower_stomach_lim',0.3) #Min. stomach fullness needed to actively swim down
+    o.set_config('drift:max_age_seconds', confobj.maximum_life_span_seconds)
    
 def createAndRunSimulation(confobj):
 
@@ -83,41 +84,54 @@ def createAndRunSimulation(confobj):
     # For each station longitude-latitude we release particles for
     # 30 days at each depth level defined in depthlevels and we track each particle for
     # 1 day (drift:max_age_seconds', 86400)
-    for day in range(confobj.totaldays):
-        
-        print('Seeding {} elements within a radius of {} m'.format(confobj.releaseParticles, 
-        confobj.releaseRadius))
-        print("Releasing {} particles between {} and {}".format(confobj.species,confobj.startdate,confobj.enddate))
+    print("----------")
+    print("Seed setup for {}".format(confobj.species))
+    for day in range(confobj.totaldays_to_seed):
+        print("=> Releasing {} particles within a radius of {} m on {} for each lat/lon location".format(confobj.releaseParticles,
+                                                                                    confobj.releaseRadius,
+                                                                                    confobj.startdate+timedelta(days=day)))
         o.seed_elements(lon=confobj.st_lons, 
                             lat=confobj.st_lats, 
                             number=confobj.releaseParticles, 
-                            time=confobj.startdate,
+                            time=confobj.startdate+timedelta(days=day),
                             # TODO: maimum life_span_seconds
                             # TODO:  z="seafloor+0.5") need to add reader for variable 
                             # `sea_floor_depth_below_sea_level
                             z=-30+(1.0*random.randint(0,10))) 
     confobj.startdate += timedelta(days=1)
-    print('Elements scheduled for {} : {}'.format(confobj.species,o.elements_scheduled))
-    enddate=confobj.enddate+timedelta(days=confobj.totaldays)
-   
+    print("----------")
+    
+    enddate_from_simulations=confobj.startdate+timedelta(days=confobj.totaldays_to_seed)+timedelta(seconds=confobj.maximum_life_span_seconds)
+    if (enddate_from_simulations < confobj.enddate):
+        print("End date for simulation is {}".format(enddate))
+        enddate=enddate_from_simulations
+    else:
+        print("End date is hardcoded and will be shorter than expected from setup ({} vs {})".format(enddate_from_simulations,
+                                                                                                     confobj.enddate))
+        enddate=confobj.enddate
+        
     o.run(end_time=enddate, 
         time_step=timedelta(minutes=30), 
         time_step_output=timedelta(minutes=30),
         outfile=confobj.outputFilename,
         # TODO: add 'sea_floor_depth_below_sea_level' when you have reader for it
         export_variables=['temp','z','x_sea_water_velocity', 'y_sea_water_velocity'])
-
-    o.plot(background=['x_sea_water_velocity', 'y_sea_water_velocity'],filename="test.png")
-   # o.animation(background=['x_sea_water_velocity', 'y_sea_water_velocity'], filename="animation.mp4")
+    if not os.path.exists('Figures'): os.mkdir('Figures')
+    
+    pre, ext = os.path.splitext(os.path.basename(confobj.outputFilename))
+    plotfile_name='Figures/'+pre[0:-1]+'_plot.png'
+    o.plot(background=['x_sea_water_velocity', 'y_sea_water_velocity'],filename=plotfile_name)
+    animfile_name='Figures/'+pre[0:-1]+'_animation.mp4'
+   # o.animation(background=['x_sea_water_velocity', 'y_sea_water_velocity'], filename=animfile_name)
   
-   # o.plot_vertical_distribution(show_wind=False)
+    o.plot_vertical_distribution(show_wind=False)
             
 if __name__ == "__main__":
     start_time = time.time()
 
     confobj=confm.loco_conf()
     
-    experiments = [1,2]
+    experiments = [2] # [1,2] 
     
     for experiment in experiments:
         confobj.experiment=experiment

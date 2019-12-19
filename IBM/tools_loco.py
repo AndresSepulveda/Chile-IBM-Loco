@@ -41,10 +41,8 @@ def createOutputFilenames(confobj):
     endDate+='%s'%(confobj.enddate.year)
  
     # File naming
-    if confobj.verticalBehavior:
-        outputFilename='results/%s_opendrift_%s_to_%s_vertical.nc'%(confobj.species,startDate,endDate)
-    else:
-        outputFilename='results/%s_opendrift_%s_to_%s_novertical.nc'%(confobj.species,startDate,endDate)
+    outputFilename='results/%s_opendrift_%s_to_%s_experiment_%s.nc'%(confobj.species,startDate,endDate,confobj.experiment)
+   
     if not os.path.exists('results'):
         os.makedirs('results')
     if os.path.exists(outputFilename):

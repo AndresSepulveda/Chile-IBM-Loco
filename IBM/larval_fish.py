@@ -133,8 +133,8 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
           
         self._add_config('IBM:vertical_behavior_fixed_range', 'boolean(default=False)', comment='Fixed swim range for VB')
         self._add_config('IBM:vertical_behavior_dynamic_range', 'boolean(default=True)', comment='Dynamic swim range for VB')
-        self._add_config('IBM:total_time_free_drift_before_competency', 'float(min=86400, max=172800, default=86400)', comment='Time after spawn to drift')
-        self._add_config('IBM:total_competency_duration', 'float(min=2592000, max=25920000, default=2592000)', comment='Time of competence')
+        self._add_config('IBM:total_time_free_drift_before_competency', 'float(min=0, max=172800, default=86400)', comment='Time after spawn to drift')
+        self._add_config('IBM:total_competency_duration', 'float(min=0, max=25920000, default=2592000)', comment='Time of competence')
         self._add_config('IBM:passive_drift_during_competence_period', 'boolean(default=False)', comment='Drift during competence')
     
         self.complexIBM=False
@@ -188,7 +188,7 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         self.elements.weight+=GR*dt
         
         # Update days of competency stage completed
-        self.elements.competency_duration+=dt/86400.
+        self.elements.competency_duration+=dt
         
         # TODO: Need a function that relates growth to length to update length for each time step
         
@@ -196,10 +196,10 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         """
         Update the vertical position of the current larva
         """
-        
+       
         swim_speed=0.1*length # 0.1 Body length per second
         fraction_of_timestep_swimming = self.get_config('IBM:fraction_of_timestep_swimming')
-        max_hourly_move = swim_speed*dt # TODO : add ? *fraction_of_timestep_swimming
+        max_hourly_move = swim_speed*(dt/3600.) # TODO : add ? *fraction_of_timestep_swimming
         max_hourly_move =  round(max_hourly_move/1000.,1) # depth values are negative
         
         if (old_light <= current_light): # and stomach_fullness >= lower_stomach_lim): #If light increases and stomach is sufficiently full, go down
@@ -213,7 +213,7 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         Update the vertical position of the current larva
         """
         swim_speed=30.0/86400.0*0.5
-        max_hourly_move = swim_speed*dt
+        max_hourly_move = swim_speed*(dt/3600.)
         
         if (old_light <= current_light): # and stomach_fullness >= lower_stomach_lim): #If light increases and stomach is sufficiently full, go down
           depth = min(0.0,current_depth - max_hourly_move)
@@ -245,8 +245,7 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         self.update_larval_fish_development()
         
         # VERTICAL POSITION UPDATE
-        dt=self.time_step.total_seconds()
-
+        
         for ind in range(len(self.elements.lat)):
           if (self.elements.competency_duration[ind]>=total_competency_duration+dt_drift):
               
@@ -256,15 +255,15 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
                     self.elements.light[ind],
                     self.elements.z[ind],
                     self.elements.stomach_fullness[ind],
-                    dt)
+                    self.elements.age_seconds[ind])
             if self.get_config('IBM:vertical_behavior_dynamic_range') is True:
                 self.elements.z[ind] = self.update_vertial_position(self.elements.length[ind],
                 last_light[ind],
                 self.elements.light[ind],
                 self.elements.z[ind],
                 self.elements.stomach_fullness[ind],
-                dt)
-
+                self.elements.age_seconds[ind])
+          
 
     def update(self):
         """

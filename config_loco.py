@@ -9,9 +9,9 @@ import glob
 __author__ = 'Trond Kristiansen'
 __email__ = 'me (at) trondkristiansen.com'
 __created__ = datetime(2019, 11, 19)
-__modified__ = datetime(2019, 11, 19)
+__modified__ = datetime(2019, 12, 19)
 __version__ = "1.0"
-__status__ = "Development, modified on 19.11.2019"
+__status__ = "Development, modified on 19.11.2019, 19.12.2019"
 
 
 class loco_conf():
@@ -52,9 +52,9 @@ class loco_conf():
         self.complexIBM=False
         self.maximum_life_span_seconds=86400*30*3 # seconds in day * days * months
         
-        if self.experiment == 1: 
+        if (self.experiment==1 or self.experiment==2): 
             self.startdate=datetime(2019,11,1,0,0,0)
-            self.enddate=datetime(2019,11,3,0,0,0)
+            self.enddate=datetime(2019,11,20,0,0,0)
 
         self.basedir='/Users/trondkr/Dropbox/NIVA/ChileIBM/Data/' 
         years=(np.linspace(self.startdate.year% 10,self.enddate.year% 10, (self.enddate.year-self.startdate.year)+1,endpoint=True)).astype(int)
@@ -64,10 +64,10 @@ class loco_conf():
         # LOCO - seed locations
         self.st_lons, self.st_lats = self.load_release_points()
         # Total time at teh bottom prior to starting vertical behavior
-        self.total_competency_duration=30.0*24.0*3600.0 # days in seconds
+        self.total_competency_duration=0.2*24.0*3600.0 # days in seconds
         # Total time free drift before settlement to bottom for competency_duration
-        self.total_time_free_drift_before_competency=1.0*24*3600. # days in seconds
-        self.totaldays=10 # days
+        self.total_time_free_drift_before_competency=0.1*24*3600. # days in seconds
+        self.totaldays_to_seed=10 # days
         self.passive_drift_during_competence_period=True
         
     def __init__(self):
