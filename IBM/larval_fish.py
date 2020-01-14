@@ -291,7 +291,7 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         
         # Horizontal advection
         dt_drift=self.get_config('IBM:total_time_free_drift_before_competency') 
-        dt_competence=self.get_config('IBM:total_time_free_drift_before_competency') 
+        dt_competence=self.get_config('IBM:total_competency_duration') 
         passive_drift_during_competence_period=self.get_config('IBM:passive_drift_during_competence_period') 
         
         if not passive_drift_during_competence_period:
