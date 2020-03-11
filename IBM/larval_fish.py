@@ -137,7 +137,7 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
                          comment='Fixed swim range for VB')
         self._add_config('IBM:vertical_behavior_dynamic_range', 'boolean(default=True)',
                          comment='Dynamic swim range for VB')
-        self._add_config('IBM:total_time_free_drift_before_competency', 'float(min=0, max=172800, default=86400)',
+        self._add_config('IBM:total_time_free_drift_before_competency', 'float(min=0, max=372800, default=86400)',
                          comment='Time after spawn to drift')
         self._add_config('IBM:total_competency_duration', 'float(min=0, max=25920000, default=2592000)',
                          comment='Time of competence')
@@ -184,16 +184,19 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
     # Behavior
 
     def update_vertial_position_fixed_range(self, length, old_light, current_light, current_depth, dt):
-        """
-        Update the vertical position of the current larva
-        """
-        swim_speed = 30.0 / 86400.0 * 0.5
+
+        swim_speed = 0.1 * length  # 0.1 Body length per second
         max_hourly_move = swim_speed * (dt / 3600.)
+        max_hourly_move = round(max_hourly_move / 1000., 1)
+        lowDepth = -200
+        highDepth = 0
 
         if old_light <= current_light:  # and stomach_fullness >= lower_stomach_lim): #If light increases and stomach is sufficiently full, go down
-            depth = min(0.0, current_depth - max_hourly_move)
+            depth = max(lowDepth, current_depth - max_hourly_move)
+            print("DO Level ", depth)
         else:  # If light decreases or stomach is not sufficiently full, go up
-            depth = min(0, current_depth + max_hourly_move)
+            depth = min(highDepth, current_depth + max_hourly_move)
+            print("UP Level ",depth)
         return depth
 
     def update_vertial_position_dynamic_range(self, length, old_light, current_light, current_depth, stomach_fullness,
@@ -261,7 +264,7 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
 
         # VERTICAL POSITION UPDATE
         for ind in range(len(self.elements.lat)):
-            if self.elements.competency_duration[ind] >= total_competency_duration + dt_drift:
+            if dt_drift <= self.elements.competency_duration[ind] >= total_competency_duration + dt_drift:
                 if self.get_config('IBM:vertical_behavior_fixed_range') is True:
                     self.elements.z[ind] = self.update_vertial_position_fixed_range(self.elements.length[ind],
                                                                                     last_light[ind],
@@ -303,10 +306,17 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         self.update_larval_fish()
 
         # Horizontal advection
+<<<<<<< HEAD
         dt_drift = self.get_config('IBM:total_time_free_drift_before_competency')
         dt_competence = self.get_config('IBM:total_time_free_drift_before_competency')
         passive_drift_during_competence_period = self.get_config('IBM:passive_drift_during_competence_period')
 
+=======
+        dt_drift=self.get_config('IBM:total_time_free_drift_before_competency') 
+        dt_competence=self.get_config('IBM:total_competency_duration') 
+        passive_drift_during_competence_period=self.get_config('IBM:passive_drift_during_competence_period') 
+        
+>>>>>>> 2f1e4c68f5d2957ec27f14f740b9314c09237577
         if not passive_drift_during_competence_period:
             for ind in range(len(self.elements.lat)):
                 # If the age of the fish is less than the initial drift
