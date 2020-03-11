@@ -306,17 +306,11 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         self.update_larval_fish()
 
         # Horizontal advection
-<<<<<<< HEAD
+
         dt_drift = self.get_config('IBM:total_time_free_drift_before_competency')
         dt_competence = self.get_config('IBM:total_time_free_drift_before_competency')
         passive_drift_during_competence_period = self.get_config('IBM:passive_drift_during_competence_period')
 
-=======
-        dt_drift=self.get_config('IBM:total_time_free_drift_before_competency') 
-        dt_competence=self.get_config('IBM:total_competency_duration') 
-        passive_drift_during_competence_period=self.get_config('IBM:passive_drift_during_competence_period') 
-        
->>>>>>> 2f1e4c68f5d2957ec27f14f740b9314c09237577
         if not passive_drift_during_competence_period:
             for ind in range(len(self.elements.lat)):
                 # If the age of the fish is less than the initial drift

@@ -84,7 +84,7 @@ def create_and_run_simulation(confobj):
                         lat=confobj.st_lats,
                         number=confobj.releaseParticles,
                         time=confobj.startdate + timedelta(days=day),
-                        z="seafloor+0.5")  # z=-30 + (1.0 * random.randint(0, 10)))
+                        z=-10) # "seafloor+0.5")  # z=-30 + (1.0 * random.randint(0, 10)))
     confobj.startdate += timedelta(days=1)
     print("----------")
 
