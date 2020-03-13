@@ -112,7 +112,7 @@ def create_and_run_simulation(confobj):
     if not os.path.exists('Figures'):
         os.mkdir('Figures')
     pre, ext = os.path.splitext(os.path.basename(confobj.outputFilename))
-    plotfile_name = 'Figures/' + pre[0:-1] + '_plot.png'
+    plotfile_name = 'Figures/' + pre[0:-1] + str(confobj.experiment) + '_plot.png'
     o.plot(background=['x_sea_water_velocity', 'y_sea_water_velocity'], filename=plotfile_name)
     animfile_name = 'Figures/' + pre[0:-1] + '_animation.mp4'
     #o.animation(background=['x_sea_water_velocity', 'y_sea_water_velocity'], filename=animfile_name)
