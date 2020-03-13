@@ -40,7 +40,7 @@ def plt_part(df, axis, color):
     axis.xaxis.set_major_formatter(mdates.DateFormatter(frmt))
     axis.set_ylabel('Depth, m')
     axis.set_xlabel('Month,day of the release')
-    axis.set_ylim(-650, 0)
+    axis.set_ylim(-60, 0)
     return all_depths
 
 # axis.set_xlim(startdate, '2000-02-15T00:00:00')
@@ -73,7 +73,7 @@ def call_make_plot_mf():
     for axis2 in (ax1_1, ax2_1):
         axis2.set_title('Loco depths')
 
-    bins = np.arange(-650, 0, 20)
+    bins = np.arange(-60, 0, 1)
 
     all_depths_1_flat=[depth for sub_list in all_depths_1 for depth in sub_list]
     all_depths_2_flat = [depth for sub_list in all_depths_2 for depth in sub_list]

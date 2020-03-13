@@ -100,10 +100,10 @@ def create_and_run_simulation(confobj):
         enddate = confobj.enddate
 
     o.run(end_time=enddate,
-          time_step=timedelta(minutes=30),
-          time_step_output=timedelta(minutes=30),
+          time_step=timedelta(minutes=10),
+          time_step_output=timedelta(minutes=10),
           outfile=confobj.outputFilename,
-          export_variables=['temp', 'z',
+          export_variables=['temp', 'z','light',
                             'x_sea_water_velocity',
                             'y_sea_water_velocity',
                             'sea_floor_depth_below_sea_level'])

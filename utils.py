@@ -5,7 +5,7 @@ import numpy as np
 # criteria to find sedimentation event
 sed_crit = 0.1
 
-ranges = {1: ['01062008', '20062008'], 2: ['01062008', '20062008'],
+ranges = {1: ['01062008', '20062008'], 2: ['02062008', '20062008'],
           3: ['20112015', '01042016'], 4: ['01052016', '01082016'],
           5: ['03082015', '01082016']}
 
@@ -68,5 +68,5 @@ def get_df(path):
     return df.where(df.status > -1, drop=True)
 
 
-if __name__ is '__main__':
+if __name__ =='__main__':
     print(get_paths([1, 2], experiment=1))
