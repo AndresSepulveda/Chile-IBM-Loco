@@ -81,7 +81,7 @@ def call_make_plot_mf():
     ax2_1.hist(all_depths_2_flat, bins=bins, density=True)
 
 
-    plt.savefig('Figures/Loco_trajectories_and_histograms.png',format = 'png')
+    plt.savefig('Figures/Loco_trajectories_and_histograms_w_advection_turbulence.png',format = 'png')
     print("---  It took %s seconds to run the script ---" % (time.time() - start_time))
     plt.show()
 

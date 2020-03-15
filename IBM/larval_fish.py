@@ -1,11 +1,11 @@
 import os
 import numpy as np
-from datetime import datetime, timedelta
+import datetime
 from opendrift.models.opendrift3D import \
     OpenDrift3DSimulation, Lagrangian3DArray
 from opendrift.elements import LagrangianArray
-import IBM.calclight as calclight
-
+import pysolar
+import copy
 
 # Defining the oil element properties
 class LarvalFish(Lagrangian3DArray):
@@ -29,9 +29,9 @@ class LarvalFish(Lagrangian3DArray):
         ('hatched', {'dtype': np.int64,
                      'units': '',
                      'default': 0}),
-        ('competency_duration', {'dtype': np.float32,  # Added to track percentage of competency time completed
-                                 'units': '',
-                                 'default': 0.}),
+        ('age', {'dtype': np.float32,  # Added to track percentage of competency time completed
+                 'units': '',
+                 'default': 0.}),
         ('length', {'dtype': np.float32,
                     'units': 'mm',
                     'default': 10.0}),
@@ -59,6 +59,7 @@ class LarvalFish(Lagrangian3DArray):
         ('survival', {'dtype': np.float32,
                       'units': '',
                       'default': 1.})])
+
 
 class PelagicPlanktonDrift(OpenDrift3DSimulation):
     """Buoyant particle trajectory model based on the OpenDrift framework.
@@ -147,73 +148,58 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         self.complexIBM = False
 
     def calculate_maximum_daily_light(self):
-        """LIGHT == Get the maximum light at the current latitude, and the current surface light at the current time.
-        These values are used in calculateGrowth and  predation.FishPredAndStarvation, but need only be calcuated once per time step. """
 
-        tt = self.time.timetuple()
+        dd = (self.start_time + datetime.timedelta(seconds=self.elements.age_seconds[0]))
+        current_date = datetime.datetime(year=dd.year,
+                                         month=dd.month,
+                                         day=dd.day,
+                                         hour=dd.hour,
+                                         second=dd.second,
+                                         tzinfo=datetime.timezone.utc)
 
-        num = np.shape(self.elements.lat)[0]
-        day_of_year = float(tt.tm_yday)
-        month = float(tt.tm_mon)
-        hour_of_day = float(tt.tm_hour)
-        days_in_year = 365.0
-        radfl0 = np.zeros(num)
-        max_light = np.zeros(num)
-        cawdir = np.zeros(num)
-        clouds = 0.0
-        sun_height = np.zeros(num)
-        surface_light = np.zeros(num)
-
-        """Calculate the maximum and average light values for a given geographic position
-        for a given time of year. Notice we use radfl0 instead of maximum values maxLight
-        in light caclualtions. Seemed better to use average values than extreme values.
-        NOTE: Convert from W/m2 to umol/m2/s-1"""
-        radfl0, max_light, cawdir = calclight.calclight.qsw(radfl0, max_light, cawdir, clouds,
-                                                            self.elements.lat * np.pi / 180.0, day_of_year,
-                                                            days_in_year, num)
-        max_light = radfl0 / 0.217
-
-        """Calculate the daily variation of irradiance based on hour of day - store in self.elements.light"""
+        # Calculate the daily variation of irradiance based on time of day using pysolar
         for ind in range(len(self.elements.lat)):
-            sun_height, surface_light = calclight.calclight.surlig(hour_of_day, float(max_light[ind]), day_of_year,
-                                                                   float(self.elements.lat[ind]), sun_height,
-                                                                   surface_light)
-            self.elements.light[ind] = surface_light
-        #  print("{} light {} time {}".format(ind,self.elements.light[ind],tt))
 
-    # Behavior
+            if self.elements.lat[ind] < 0:
+                lat = 360 - self.elements.lat[ind]
+            else:
+                lat = self.elements.lat[0]
 
-    def update_vertial_position_fixed_range(self, length, old_light, current_light, current_depth, dt):
+            altitude_deg = pysolar.solar.get_altitude(lat, self.elements.lon[ind], current_date)
+            self.elements.light[ind] = pysolar.radiation.get_radiation_direct(current_date, altitude_deg)
 
-        swim_speed = 0.1 * length  # 0.1 Body length per second
-        max_hourly_move = swim_speed * (dt / 3600.)
-        max_hourly_move = round(max_hourly_move / 1000., 1)
-        lowDepth = -200
-        highDepth = 0
+
+    def update_vertial_position_fixed_range(self, length, old_light, current_light, current_depth):
+
+        mm2m = 1. / 1000.
+        swim_speed = 0.5 * length * mm2m * self.time_step.total_seconds()
+        max_hourly_move = swim_speed * (self.time_step.total_seconds() / 3600.)
+
+        lowDepth = -40
+        highDepth = -10
 
         if old_light <= current_light:  # and stomach_fullness >= lower_stomach_lim): #If light increases and stomach is sufficiently full, go down
             depth = max(lowDepth, current_depth - max_hourly_move)
-            print("DO Level ", depth)
         else:  # If light decreases or stomach is not sufficiently full, go up
             depth = min(highDepth, current_depth + max_hourly_move)
-            print("UP Level ",depth)
         return depth
 
-    def update_vertial_position_dynamic_range(self, length, old_light, current_light, current_depth, stomach_fullness,
-                                              dt):
-        """
-        Update the vertical position of the current larva
-        """
-        swim_speed = 0.1 * length  # 0.1 Body length per second
-        fraction_of_timestep_swimming = self.get_config('IBM:fraction_of_timestep_swimming')
-        max_hourly_move = swim_speed * (dt / 3600.)  # TODO : add ? *fraction_of_timestep_swimming
-        max_hourly_move = round(max_hourly_move / 1000., 1)  # depth values are negative
+    def update_vertial_position_dynamic_range(self, length,
+                                              old_light,
+                                              current_light,
+                                              current_depth):
+
+        # Update the vertical position of the current larva using length (in mm) to calculate
+        # ma hourly move in meters
+        mm2m = 1./1000.
+        swim_speed = 0.5 * length * mm2m * self.time_step.total_seconds()
+        max_hourly_move = swim_speed * (self.time_step.total_seconds() / 3600.)
 
         if old_light <= current_light:  # and stomach_fullness >= lower_stomach_lim): #If light increases and stomach is sufficiently full, go down
             depth = min(0.0, current_depth - max_hourly_move)
         else:  # If light decreases or stomach is not sufficiently full, go up
             depth = min(0, current_depth + max_hourly_move)
-
+     #   print(current_depth,depth,max_hourly_move)
         return depth
 
     def update_larval_fish_development(self):
@@ -232,10 +218,10 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
         # Update the lengthg (mm) using DOI:10.1371/journal.pone.0146418
         mm2micrometer = 0.001
 
-        #self.elements.length = (self.elements.length*mm2micrometer + GR * dt)*(1./mm2micrometer)
+        # self.elements.length = (self.elements.length*mm2micrometer + GR * dt)*(1./mm2micrometer)
 
         # Update days of competency stage completed
-        self.elements.competency_duration += dt
+        self.elements.age += dt
 
         # TODO: Need a function that relates growth to length to update length for each time step
 
@@ -253,8 +239,7 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
 
         # LIGHT UPDATE
         # Save the light from previous timestep to use for vertical behavior
-        last_light = np.zeros(np.shape(self.elements.light))
-        last_light[:] = self.elements.light[:]
+        last_light = self.elements.light.copy()
         self.calculate_maximum_daily_light()
         # Light at depth of larvae assuming constant attenuation (can be changed to dependent on chlorophyll)
         self.elements.Eb = self.elements.light * np.exp(att_coeff * self.elements.z)
@@ -264,21 +249,18 @@ class PelagicPlanktonDrift(OpenDrift3DSimulation):
 
         # VERTICAL POSITION UPDATE
         for ind in range(len(self.elements.lat)):
-            if dt_drift <= self.elements.competency_duration[ind] >= total_competency_duration + dt_drift:
+            if (self.elements.age_seconds[ind] <= dt_drift) \
+                    or (self.elements.age_seconds[ind] >= (total_competency_duration + dt_drift)):
                 if self.get_config('IBM:vertical_behavior_fixed_range') is True:
                     self.elements.z[ind] = self.update_vertial_position_fixed_range(self.elements.length[ind],
                                                                                     last_light[ind],
                                                                                     self.elements.light[ind],
-                                                                                    self.elements.z[ind],
-                                                                                    self.elements.age_seconds[ind])
+                                                                                    self.elements.z[ind])
                 if self.get_config('IBM:vertical_behavior_dynamic_range') is True:
                     self.elements.z[ind] = self.update_vertial_position_dynamic_range(self.elements.length[ind],
                                                                                       last_light[ind],
                                                                                       self.elements.light[ind],
-                                                                                      self.elements.z[ind],
-                                                                                      self.elements.stomach_fullness[
-                                                                                          ind],
-                                                                                      self.elements.age_seconds[ind])
+                                                                                      self.elements.z[ind])
 
     def update(self):
 

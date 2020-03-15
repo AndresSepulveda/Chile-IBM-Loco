@@ -21,8 +21,8 @@ def setup_configuration(o, confobj):
     #######################
     # PHYSICS configuration
     #######################
-    o.set_config('processes:turbulentmixing', False)
-    o.set_config('processes:verticaladvection', False)
+    o.set_config('processes:turbulentmixing', True)
+    o.set_config('processes:verticaladvection', True)
     o.set_config('turbulentmixing:diffusivitymodel', 'windspeed_Sundby1983')
 
     o.set_config('turbulentmixing:TSprofiles', False)
@@ -100,8 +100,8 @@ def create_and_run_simulation(confobj):
         enddate = confobj.enddate
 
     o.run(end_time=enddate,
-          time_step=timedelta(minutes=10),
-          time_step_output=timedelta(minutes=10),
+          time_step=timedelta(minutes=20),
+          time_step_output=timedelta(minutes=20),
           outfile=confobj.outputFilename,
           export_variables=['temp', 'z','light',
                             'x_sea_water_velocity',

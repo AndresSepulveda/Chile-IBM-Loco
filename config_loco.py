@@ -53,7 +53,7 @@ class LocoConf:
         # General options
         self.experiment = 1
         # Number of particles released for each seed location and time
-        self.releaseParticles = 25
+        self.releaseParticles = 4
         # The radius around the seed location for particles to be seeded
         self.releaseRadius = 1000
 
@@ -76,7 +76,7 @@ class LocoConf:
         # LOCO - seed locations
         self.st_lons, self.st_lats = self.load_release_points()
         # Total time at teh bottom prior to starting vertical behavior
-        self.total_competency_duration = 2. * 24.0 * 3600.0  # days in seconds
+        self.total_competency_duration = 3. * 24.0 * 3600.0  # days in seconds
         # Total time free drift before settlement to bottom for competency_duration
         self.total_time_free_drift_before_competency = 1. * 24 * 3600.  # days in seconds
         self.totaldays_to_seed = 30  # days
