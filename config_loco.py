@@ -53,9 +53,10 @@ class LocoConf:
         # General options
         self.experiment = 1
         # Number of particles released for each seed location and time
-        self.releaseParticles = 4
+        self.releaseParticles = 25
         # The radius around the seed location for particles to be seeded
-        self.releaseRadius = 1000
+        # Release radius in KM
+        self.releaseRadius = 10
 
         self.verticalBehavior = True
         self.loglevel = 0
@@ -84,7 +85,7 @@ class LocoConf:
 
         # Plotting options
         self.plot_type = 'heatmap'
-        self.requiredResolution = 30  # km between bins
+        self.requiredResolution = 2.5  # km between bins
         # min longitude
         self.xmin = 260.0
         # max longitude
@@ -95,3 +96,9 @@ class LocoConf:
         self.ymax = -20.0
         self.cmapname = 'RdYlBu_r'
         self.selectyear = 'all'
+        self.sed_crit = 1000000
+        self.probxmin = -72.0
+        self.probxmax = -71.0
+        self.probymin = -29.5
+        self.probymax = -29.00
+        self.ROMSFILE = '/Users/trondkr/Dropbox/NIVA/ChileIBM/Data/croco_avg.nc'

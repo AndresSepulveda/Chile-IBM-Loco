@@ -12,9 +12,9 @@ from IBM.larval_fish import PelagicPlanktonDrift
 __author__ = 'Trond Kristiansen'
 __email__ = 'me (at) trondkristiansen.com'
 __created__ = datetime(2019, 11, 19)
-__modified__ = datetime(2020, 3, 4)
+__modified__ = datetime(2020, 3, 18)
 __version__ = "1.0"
-__status__ = "Development, modified on 19.11.2019, 04.03.2020, 10.03.2020"
+__status__ = "Development, modified on 19.11.2019, 04.03.2020, 10.03.2020, 16.03.2020, 18.03.2020"
 
 
 def setup_configuration(o, confobj):

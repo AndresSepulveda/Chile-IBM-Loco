@@ -7,7 +7,7 @@ import numpy as np
 import xarray as xr
 from pandas.plotting import register_matplotlib_converters
 import seaborn as sns
-import utils
+import IBM.utils as utils
 import time
 import glob
 import dask
