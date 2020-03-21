@@ -48,7 +48,7 @@ def createInputFilename(confobj):
         startDate, endDate,
         confobj.experiment)
     print("Opemning input file {}".format(confobj.outputFilename))
-    confobj.outputPlotFilename = 'figures/{}_opendrift_{}_to_{}_experiment_{}.png'.format(
+    confobj.outputPlotFilename = 'Figures/{}_opendrift_{}_to_{}_experiment_{}.png'.format(
         confobj.species,
         startDate, endDate,
         confobj.experiment)
