@@ -76,7 +76,7 @@ def create_and_run_simulation(confobj):
     print("----------")
     print("Seed setup for {}".format(confobj.species))
     for day in range(confobj.totaldays_to_seed):
-        print("=> Releasing {} particles within a radius of {} m on {} for each lat/lon location".format(
+        print("=> Releasing {} particles within a radius of {} km on {} for each lat/lon location".format(
             confobj.releaseParticles,
             confobj.releaseRadius,
             confobj.startdate + timedelta(days=day)))
