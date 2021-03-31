@@ -1,3 +1,23 @@
 # Chile IBM
 
 * An IBM developed to simulate the drift, distribution, growth, development, and survival of Concholepas concholepas (loco) in Chile
+
+To adapt a CROCO file to be read do
+
+1)   Cambiar el nombre de la variable tiempo a ocean_time
+
+ncrename -O -v scrum_time,ocean_time  archivo.nc
+
+2) Con Matlab u Octave, renombrar el atributo units
+
+octave:8> nc=netcdf('archivo.nc','w');
+octave:9> nc{'time'}.units = 'seconds since 2000-01-01 00:00:00';
+octave:10> nc{'ocean_time'}.units = 'seconds since 2000-01-01 00:00:00';
+octave:11> close(nc)
+
+3) Agregarle la variable Vstretching, yo la saque de un CLM
+con
+ncks -v Vstretching croco_clmP_TNZ.nc Vstretching.nc
+
+y se agregaria con
+ncks -A Vstretching.nc sml_part_mod.nc
