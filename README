@@ -13,7 +13,11 @@ ncrename -O -v scrum_time,ocean_time  archivo.nc
 octave:8> nc=netcdf('archivo.nc','w');
 octave:9> nc{'time'}.units = 'seconds since 2000-01-01 00:00:00';
 octave:10> nc{'ocean_time'}.units = 'seconds since 2000-01-01 00:00:00';
-octave:11> close(nc)
+octave:11> tiempo = nc{'time'}(:);
+octave:12> tiempo = tiempo-tiempo(1);
+octave:13> nc{'time'}(:)=tiempo;
+octave:14> nc{'ocean_time'}(:)=tiempo;
+octave:15> close(nc)
 
 3) Agregarle la variable Vstretching, yo la saque de un CLM
 con
