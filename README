@@ -10,14 +10,14 @@ ncrename -O -v scrum_time,ocean_time  archivo.nc
 
 2) Con Matlab u Octave, renombrar el atributo units
 
-octave:8> nc=netcdf('archivo.nc','w');
-octave:9> nc{'time'}.units = 'seconds since 2000-01-01 00:00:00';
-octave:10> nc{'ocean_time'}.units = 'seconds since 2000-01-01 00:00:00';
-octave:11> tiempo = nc{'time'}(:);
-octave:12> tiempo = tiempo-tiempo(1);
-octave:13> nc{'time'}(:)=tiempo;
-octave:14> nc{'ocean_time'}(:)=tiempo;
-octave:15> close(nc)
+octave:> nc=netcdf('archivo.nc','w');
+octave:> nc{'time'}.units = 'seconds since 2000-01-01 00:00:00';
+octave:> nc{'ocean_time'}.units = 'seconds since 2000-01-01 00:00:00';
+octave:> tiempo = nc{'time'}(:);
+octave:> tiempo = tiempo-tiempo(1);
+octave:> nc{'time'}(:)=tiempo;
+octave:> nc{'ocean_time'}(:)=tiempo;
+octave:> close(nc)
 
 3) Agregarle la variable Vstretching, yo la saque de un CLM
 con
@@ -25,3 +25,13 @@ ncks -v Vstretching croco_clmP_TNZ.nc Vstretching.nc
 
 y se agregaria con
 ncks -A Vstretching.nc sml_part_mod.nc
+
+4) Para repetir un archivo/mes agregar
+
+octave:> nc=netcdf('archivo.nc','w');
+octave:> tiempo = nc{'time'}(:);
+octave:> tiempo(end);
+octave:> ans = 2592000
+octave:> nc{'time'}.cycle_length = 2592000;
+
+
