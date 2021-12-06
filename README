@@ -34,4 +34,53 @@ octave:> tiempo(end);
 octave:> ans = 2592000
 octave:> nc{'time'}.cycle_length = 2592000;
 
+# Referencias Útiles
 
+
+    MPA network design based on graph theory and emergent properties of larval dispersal
+Andres. Ospina-Alvarez, S. de Juan, Josep. Alós, G. Basterretxea, A. Alonso-Fernández, 
+G. Follana-Berná, M. Palmer, I A. Catalán MARINE ECOLOGY PROGRESS SERIES , Vol. 650. 
+Pag. 309-326 (2020) https://doi.org/10.3354/meps13399
+
+  Beger, Maria, et al. "Incorporating Asymmetric Connectivity into Spatial Decision 
+Making for Conservation." Conservation Letters, vol. 3, no. 5, Sept. 2010, pp. 359–368, 
+doi:10.1111/j.1755-263X.2010.00123.x.
+
+  Costa, A., et al. "A New Interpretation of Graph Theory Measures in Evaluating Marine 
+Metapopulations Persistence: The Study Case of Soft-Bottom Polychaetes in the Gulf of Lion." 
+Library Website, 2016, http://mio.pytheas.univ-amu.fr/ costa.a/preprint.pdf.
+
+  Daigle, Rémi M., et al. "Operationalizing Ecological Connectivity in Spatial Conservation 
+Planning with Marxan Connect." Methods in Ecology and Evolution, edited by Nick Golding, vol. 
+11, no. 4, John Wiley & Sons, Ltd, 2020, pp. 570–79, doi:10.1111/2041-210X.13349.
+
+  Keyes, Aislyn A., et al. "An Ecological Network Approach to Predict Ecosystem Service 
+Vulnerability to Species Losses." Nature Communications, vol. 12, no. 1, 2021, p. 1586, 
+doi:10.1038/s41467-021-21824-x.
+
+  Krueck, Nils C., et al. "Incorporating Larval Dispersal into MPA Design for Both Conservation 
+and Fisheries." Ecological Applications, vol. 27, no. 3, Apr. 2017, pp. 925–941, doi:10.1002/eap.1495.
+
+  Magris, Rafael A., et al. "Integrating Multiple Species Connectivity and Habitat Quality 
+into Conservation Planning for Coral Reefs." Ecography, vol. 38, Aug. 2015, pp. 001–016, 
+doi:10.1111/ecog.01507.
+
+  Mora, Camilo, et al. "High Connectivity among Habitats Precludes the Relationship 
+between Dispersal and Range Size in Tropical Reef Fishes." Ecography, vol. 35, no. 1, 
+May 2012, pp. 89–96, doi:10.1111/j.1600-0587.2011.06874.x.
+
+  Saunders, Megan I., et al. "Human Impacts on Connectivity in Marine and Freshwater 
+Ecosystems Assessed Using Graph Theory: A Review." Marine and Freshwater Research, vol. 
+67, no. 3, CSIRO PUBLISHING, 2016, p. 277, doi:10.1071/MF14358.
+
+  Thomas, Christopher J., et al. Numerical Modelling and Graph Theory Tools to Study 
+Ecological Connectivity in the Great Barrier Reef. Jan. 2014, pp. 160–174, 
+doi:10.1016/j.ecolmodel.2013.10.002.
+
+  Treml, Eric A., John R. Ford, et al. "Identifying the Key Biophysical Drivers, 
+Connectivity Outcomes, and Metapopulation Consequences of Larval Dispersal in the Sea." 
+Movement Ecology, vol. 3, no. 1, July 2015, p. 17, doi:10.1186/s40462-015-0045-6.
+
+  Treml, Eric A., Patrick N. Halpin, et al. "Modeling Population Connectivity by Ocean 
+Currents, a Graph-Theoretic Approach for Marine Conservation." Landscape Ecology, 
+vol. 23, no. S1, 2008, pp. 19–36, doi:10.1007/s10980-007-9138-y.
