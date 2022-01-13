@@ -8,5 +8,5 @@ function [del, a,c,dlat,dlon]=haversine(lat1,lon1,lat2,lon2)
     c = 2 .* asin(sqrt(a));
     del = c * 6362.8;
 %    arrayfun(@(x) printf("distance: %.4f km\n",6372.8 * x), c);
-end;
+end
 
