@@ -51,13 +51,14 @@ disp('Start Sankey')
     print('-dpng',[san_file,'.png'])
    
     %
-    %  NOA
+    %  No autocorrelation. Avoid particles that return to the same AMERB
     %
     sankey_noauto=sankey;
     indx_s=find(sankey_noauto(:,1) == sankey_noauto(:,2));
     sankey_noauto(indx_s,:)=[];
+    aux_totnon=size(sankey_noauto,1);
 
-    san_noa_file=[prefix,'_Sankey_NOA_',num2str(m),'_particulas'];
+    san_noa_file=[prefix,'_Sankey_NOA_',num2str(aux_totnon),'_particulas'];
     fname=[san_noa_file, '.txt'];
     save(fname,'sankey','-ascii')
     
@@ -69,7 +70,6 @@ disp('Start Sankey')
     
     disp(totpart)
     disp(totcal)
-    aux_totnon=size(sankey_noauto,1);
     totnon=[num2str(aux_totnon),' particulas noauto'];
-disp(totnon)
+    disp(totnon)
         
