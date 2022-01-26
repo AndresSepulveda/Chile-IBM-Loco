@@ -12,24 +12,31 @@ amers=load('PuntosCosta_AV.txt');
 a_lat=amers(:,2);
 a_lon=amers(:,1);
 
-a_lon=a_lon(1:10:end);
-a_lat=a_lat(1:10:end);
+skip = 10;                     %%   Samping here
 
-min_dista=5000;  % in m
+a_lon=a_lon(1:skip:end);         
+a_lat=a_lat(1:skip:end);         %%
+
+min_dista=5000;  % Has to be close to a point, in m
 
 tabla=[];
-quienconquien=[];
+
 
 disp('Leer Datos')
 
 %%%file_prefix=['20m_E1';'20m_E2';'30m_E1';'30m_E2';'40m_E1';'40m_E2'];
-file_prefix=['Uniforme_IF_Obyo_10000_M0'];
+%file_prefix=['Uniforme_IF_Obyo_10000_M0'; 'Uniforme_IF_Obyo_10000_M1'; 'Uniforme_IF_Obyo_10000_M2'; 'Uniforme_IF_Obyo_10000_M3'; ...
+%             'Uniforme_IF_Obyo_10000_M4'; 'Uniforme_IF_Obyo_10000_M5'; 'Uniforme_IF_Obyo_10000_M6'; 'Uniforme_IF_Obyo_10000_M7'; ...
+%             'Uniforme_IF_Obyo_10000_M8'; 'Uniforme_IF_Obyo_10000_M9'; 'Uniforme_IF_Obyo_10000_M10'; 'Uniforme_IF_Obyo_10000_M11'];
+file_prefix=['Uniforme_IF_Obyo_10000_M00'; 'Uniforme_IF_Obyo_10000_M01'; 'Uniforme_IF_Obyo_10000_M02'; 'Uniforme_IF_Obyo_10000_M03'; ...
+             'Uniforme_IF_Obyo_10000_M04'; 'Uniforme_IF_Obyo_10000_M05'; 'Uniforme_IF_Obyo_10000_M06'; 'Uniforme_IF_Obyo_10000_M07'; ...
+             'Uniforme_IF_Obyo_10000_M08'; 'Uniforme_IF_Obyo_10000_M09'; 'Uniforme_IF_Obyo_10000_M10'; 'Uniforme_IF_Obyo_10000_M11'];
 
 for ii=1:size(file_prefix,1)
-
+tic
     tic
     num_lat_lon=[];
-
+    quienconquien=[];
     prefix=file_prefix(ii,:)
     nc=load([prefix,'.txt']);
 
@@ -51,6 +58,8 @@ for ii=1:size(file_prefix,1)
     n0=0; % Retired
     o0=0; % None
 
+%     sankey_v2=[];
+%     
     for i=1:size(lat_ini,1)  % Trayectorias
         ini_lat=lat_ini(i);
         end_lat=lat_end(i);
@@ -72,6 +81,7 @@ for ii=1:size(file_prefix,1)
                 l0 = l0 +1;
                 try
                     particulas_od(coord_ini(1),coord_end(1))=particulas_od(coord_ini(1),coord_end(1))+1;
+%                     sankey_v2=[sankey_v2; coord_ini(1) coord_end(1) ini_lat];
                 catch
                 end %_try_catch
                 not_stranded(1,coord_ini(1)) = not_stranded(1,coord_ini(1))+1;
@@ -81,6 +91,7 @@ for ii=1:size(file_prefix,1)
                 num_lat_lon=[num_lat_lon;aux_nll];
                 try
                     particulas_od(coord_ini(1),coord_end(1))=particulas_od(coord_ini(1),coord_end(1))+1;
+%                     sankey_v2=[sankey_v2; coord_ini(1) coord_end(1) ini_lat];
                 catch
                 end %_try_catch
                 not_stranded(2,coord_ini(1)) = not_stranded(2,coord_ini(1))+1;
@@ -121,52 +132,60 @@ for ii=1:size(file_prefix,1)
              normalized_particulas_od(j,:)= (normalized_particulas_od(j,:)/total_part)*100;
          end
     end
-    
+
+%     san_file=[prefix,'_Sankey_v2'];
+%     fname=[san_file, '.txt'];
+%     save(fname,'sankey_v2','-ascii')
+
     toc
     
-    tic
-    disp('Start Sankey')
-    sankey=[];
-    m=1;
-    n=1;
-    for i=1:size(particulas_od,1)
-        for j=1:size(particulas_od,1)
-            if particulas_od(i,j) > 0
-                for k=1:particulas_od(i,j)
-                    sankey(m,1)=i;
-                    sankey(m,2)=j;
-                    sankey(m,3)=a_lat(i);
-                    m=m+1;
-                end
-            end
-        end
-    end    
-    m
-    size(lon_ini)
-    
-    san_file=[prefix,'_Sankey'];
-    fname=[san_file, '.txt'];
-    save(fname,'sankey','-ascii')
+%     tic
+% %     disp('Start Sankey')
+%     sankey=[];
+%     m=1;
+%     n=1;
+%     for i=1:size(particulas_od,1)
+%         for j=1:size(particulas_od,1)
+%             if particulas_od(i,j) > 0
+%                 for k=1:particulas_od(i,j)
+%                     sankey(m,1)=i;
+%                     sankey(m,2)=j;
+%                     sankey(m,3)=a_lat(i);
+%                     m=m+1;
+%                 end
+%             end
+%         end
+%     end    
+%     m
+%     size(lon_ini)
+%     
+%     san_file=[prefix,'_Sankey'];
+%     fname=[san_file, '.txt'];
+%     save(fname,'sankey','-ascii')
  %%%   save -ascii sankey.txt sankey
     
-    sankey_noauto=sankey;
-
-    indx_s=find(sankey(:,1) == sankey(:,2));
-    sankey_noauto(indx_s,:)=[];
-    %
-    %  Add latitude
+%    sankey_noauto=sankey;
+%     sankey_noauto_v2=sankey_v2;
+% 
+%     indx_s=find(sankey_noauto_v2(:,1) == sankey_noauto_v2(:,2));
+%     sankey_noauto_v2(indx_s,:)=[];
+%     %
+%     %  Add latitude
     %
      
-    san_noa_file=[prefix,'_Sankey_NoAuto'];
-    fname=[san_noa_file, '.txt'];
-    save(fname,'sankey_noauto','-ascii')
+%     san_noa_file=[prefix,'_Sankey_NoAuto'];
+%     fname=[san_noa_file, '.txt'];
+%     save(fname,'sankey_noauto','-ascii')
     
-    %%%save -ascii sankey_noauto.txt sankey_noauto
-    
-    disp('Sankey ready')
-    % m must be less or equal
-    toc
-    
+%      san_noa_file_v2=[prefix,'_Sankey_NoAuto_v2'];
+%      fname=[san_noa_file_v2, '.txt'];
+%      save(fname,'sankey_noauto_v2','-ascii')
+%     %%%save -ascii sankey_noauto.txt sankey_noauto
+%     
+%     disp('Sankey ready')
+%     % m must be less or equal
+%     toc
+%     
 %
 % Correccion de Daniel Brieva 22/03/2020
 %
@@ -188,34 +207,36 @@ for ii=1:size(file_prefix,1)
     disp('Graficar') 
     tic
     f = figure('visible','off');
-    pcolor(normalized_particulas_od)
+    pcolor(normalized_particulas_od')
     title([prefix, ' Conectividad Normalizada'])
-    xlabel('AMERB Destino')
-    ylabel('AMERB Origen')
+    ylabel('AMERB Destino')
+    xlabel('AMERB Origen')
     colormap(flipud(hot));
     colorbar
     print('-dpng',[prefix,'_Normalizado_Inicial_Final.png'])
 
     f = figure('visible','off');
-    pcolor(particulas_od)
+    pcolor(particulas_od')
     title([prefix, ' Conectividad - # Particulas'])
-    xlabel('AMERB Destino')
-    ylabel('AMERB Origen')
+    ylabel('AMERB Destino')
+    xlabel('AMERB Origen')
     colormap(flipud(hot));
     colorbar
     print('-dpng',[prefix,'_Inicial_Final.png'])
 
     f = figure('visible','off');
-        aux_v=normalized_particulas_od;
-        plotConfMat_as(aux_v);
-    print('-dpng',[prefix,'_Valores_Inicial_Final.png'])
+        aux_v=particulas_od;
+        plotConfMat_as(fliplr(aux_v)');
+    print('-dpdf',[prefix,'_Valores_Inicial_Final.pdf'])  % Not useful for big numbers
     
-    f = figure('visible','off');
-    try
-        function_alluvialflow(sankey_noauto);
-    catch
-        print('-dpng',[san_noa_file,'.png'])
-    end    
+%     f = figure('visible','off');
+%     try
+% %        plot_alluvialflow(sankey_noauto);
+%         plot_alluvialflow(sankey_noauto_v2);
+%     catch
+% %        print('-dpng',[san_noa_file,'.png'])
+%     end    
+%         print('-dpng',[san_noa_file_v2,'.png'])
         
     f = figure('visible','off');
     dia=diag(normalized_particulas_od);
@@ -231,26 +252,45 @@ for ii=1:size(file_prefix,1)
     tic
 
     filename=[prefix,'_inicial_final.txt'];
-    save('-ascii',filename,'particulas_od')
-
+    %save('-ascii',filename,'particulas_od')
+%     fid = fopen(filename,'w+'); 
+%     for i=1:size(particulas_od,1)
+%        fprintf(fid,'%i',particulas_od(i,:));
+%        fprintf(fid,'\n');
+%     end
+%     fclose(fid)
+    save(filename,'particulas_od','-ascii')
+    
     toc
-end
 
-aux_nll=sortrows(num_lat_lon,1);  %% NOT sort !
-[~,indx,~]=unique(aux_nll(:,1),"first");
-aux_nll=aux_nll(indx,:);
+    aux_nll=sortrows(num_lat_lon,1);  %% NOT sort !
+    [~,indx,~]=unique(aux_nll(:,1),"first");
+    aux_nll=aux_nll(indx,:);
 
 %%keyboard
 
-filename=['num_lat_lon.txt'];
-fid = fopen(filename,'w+');
-for i=1:size(aux_nll,1)
-   fprintf(fid,'%i %.4f %.4f',aux_nll(i,:));
-   fprintf(fid,'\n');
-end
-fclose(fid);
+    filename=[prefix,'_num_lat_lon.txt'];
+    fid = fopen(filename,'w+');
+    for i=1:size(aux_nll,1)
+        fprintf(fid,'%i %.4f %.4f',aux_nll(i,:));
+        fprintf(fid,'\n');
+    end
+    fclose(fid);
 
-filename=['estadistica_particulas.txt'];
+
+    filename=[prefix,'_tres_conexiones_particulas.txt'];
+%save('-ascii',filename,'quienconquien')
+%dlmwrite(filename,'quienconquien','precision',4)
+    fid = fopen(filename,'w+');
+    for i=1:size(quienconquien,1)
+        fprintf(fid,'%i %i %.1f %i %.1f %i %.1f',quienconquien(i,:));
+        fprintf(fid,'\n');
+    end
+    fclose(fid);
+toc
+end
+
+filename=['Estadistica_particulas.txt'];
 %save('-ascii',filename,'tabla')
 fid = fopen(filename,'w+');
 for i=1:size(tabla,1)
@@ -259,13 +299,4 @@ for i=1:size(tabla,1)
 end
 fclose(fid);
 
-filename=['tres_conexiones_particulas.txt'];
-%save('-ascii',filename,'quienconquien')
-%dlmwrite(filename,'quienconquien','precision',4)
-fid = fopen(filename,'w+');
-for i=1:size(quienconquien,1)
-   fprintf(fid,'%i %i %.1f %i %.1f %i %.1f',quienconquien(i,:));
-   fprintf(fid,'\n');
-end
-fclose(fid);
 toc
