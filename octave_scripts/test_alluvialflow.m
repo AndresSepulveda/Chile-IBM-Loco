@@ -1,7 +1,8 @@
-%%function function_alluvialflow(datain)
+function test_alluvialflow(datain)
 %% read data
-%filename = datain;
 
+%filename = datain;
+%keyboard
 %formato = '%f %f %f';
 
 %n       = 1;% fila en la que comienzan los datos
@@ -15,7 +16,8 @@
 %data = [D{1} D{2}];
 %etiquetas = [D{3}];
 
-datain=load('sankey_noauto.txt');
+%datain=load('sankey_noauto.txt');
+%datain=load(filename);
 
 data = [datain(:,1) datain(:,2)];
 etiquetas = datain(:,3);
@@ -64,6 +66,17 @@ for i = unique(data(:, 2))'% filas izquierda
     auxper{2}(i) =  round(length(find(aux1 == i))./length(aux1)*100);
 end
 
+% zonas al norte arriba
+left_labels  = fliplr(left_labels);
+lg_labels    = fliplr(lg_labels);
+right_labels = fliplr(right_labels);
+
+auxper{1} = fliplr(auxper{1});
+auxper{2} = fliplr(auxper{2});
+
+auxdata = flipud(auxdata);
+auxdata = fliplr(auxdata);
+
 data = auxdata;
 
 %% figura
@@ -81,7 +94,8 @@ alluvialflow(data, auxper, lg_labels, left_labels, right_labels, tname, borde);
 % settings
 ax.Position(3) = ax.Position(3)*0.8;
 
-ax.Legend.Title.String = 'Zonas de interés';
+%ax.Legend.Title.String = 'Puntos';
+ax.Legend.Title.String = ['N = ', num2str(length(etiquetas))];
 lgpos = ax.Legend.Position;
 
 ax.Legend.Position(1) = lgpos(1) + lgpos(2)*0.4;
