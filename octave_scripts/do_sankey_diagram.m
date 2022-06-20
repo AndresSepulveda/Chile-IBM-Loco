@@ -1,4 +1,8 @@
 function do_sankey_diagram(filename,puntos,prefix,skip,skip2,skip3)
+%
+%  filename is the potential connectivity matrix
+%  punto    is the file with the origin/destiny latitudes and longitudes
+%
 
 particulas_od=load(filename);
 
