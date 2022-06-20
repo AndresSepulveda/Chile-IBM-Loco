@@ -1,3 +1,6 @@
+#
+# From: http://fredgibbs.net/tutorials/create-kml-file-python.html (20/06/2022)
+#
 import csv
 import simplekml
 
