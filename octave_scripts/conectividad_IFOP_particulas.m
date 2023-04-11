@@ -157,6 +157,7 @@ pcolor(normalized_particulas_od)
 title([prefix, ' Conectividad Normalizada'])
 xlabel('AMER Destino')
 ylabel('AMER Origen')
+colormap(flipud(hot));
 colorbar
 print('-dpng',[prefix,'_Normalizado_Inicial_Final.png'])
 
@@ -165,6 +166,7 @@ pcolor(particulas_od)
 title([prefix, ' Conectividad - # Particulas'])
 xlabel('AMER Destino')
 ylabel('AMER Origen')
+colormap(flipud(hot));
 colorbar
 print('-dpng',[prefix,'_Inicial_Final.png'])
 
