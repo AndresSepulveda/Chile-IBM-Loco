@@ -47,7 +47,7 @@ def createInputFilename(confobj):
         confobj.species,
         startDate, endDate,
         confobj.experiment)
-    print("Opemning input file {}".format(confobj.outputFilename))
+    print("Opening input file {}".format(confobj.outputFilename))
     confobj.outputPlotFilename = 'Figures/{}_opendrift_{}_to_{}_experiment_{}.png'.format(
         confobj.species,
         startDate, endDate,
@@ -256,7 +256,7 @@ if __name__ == "__main__":
     for experiment in experiments:
         confobj = confm.LocoConf()
         confobj.experiment = experiment
-        # 🍇🍒🍓
+        # 
 
         confobj.plot_type = 'heatmap'
         call_make_map(confobj)
